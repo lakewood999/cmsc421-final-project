@@ -5,7 +5,7 @@ import requests
 #n defines the number of posts we want to retrieve 
     #TODO: implement n so we can get n posts
 def search(term, n): 
-    links = []
+    links = set()
 
     #the link we will be sending a GET request to
     link = f"https://www.reddit.com/search/.json?q={term}"
@@ -19,9 +19,28 @@ def search(term, n):
     children = result.get("data").get("children")
 
     for child in children: 
-        links.append("https://www.reddit.com/"+child.get("data").get("permalink"))
+        links.add("https://www.reddit.com/"+child.get("data").get("permalink"))
+
     
-    return links
+    after = result.get("data").get("after")
+    print(after)
 
+    while len(links) < n: 
+        print(after)
+        print("trying to find more posts", len(links))
+        result = requests.get(url =f"https://www.reddit.com/search/.json?q={term}&after={after}",  headers = {'User-agent': 'your bot 0.1'}).json()
+        
+        children = result.get("data").get("children")
 
-print(len(search("wowPosts", 1)))
+        for child in children: 
+            links.add("https://www.reddit.com/"+child.get("data").get("permalink"))
+        
+        #update after
+        after = result.get("data").get("after")
+        
+    
+    return list(links)
+
+res = search("wowPosts", 100)
+print(len(res))
+print(res)
