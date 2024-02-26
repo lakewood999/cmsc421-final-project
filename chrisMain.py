@@ -27,6 +27,10 @@ def search(term, n):
 
     while len(links) < n: 
 
+        #if after becomes none we have no more posts to go through
+        if after is None:
+            break
+
         print(after)
         print("trying to find more posts", len(links))
         result = requests.get(url =f"https://www.reddit.com/search/.json?q={term}&after={after}",  headers = {'User-agent': 'your bot 0.1'}).json()
@@ -42,6 +46,6 @@ def search(term, n):
     
     return list(links)
 
-res = search("wowPosts", 100)
+res = search("wowPosts", 1000)
 print(len(res))
 print(res)
