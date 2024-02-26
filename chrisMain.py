@@ -3,7 +3,7 @@ import requests
 
 #returns list of reddit links posts related to the given search term
 #n defines the number of posts we want to retrieve 
-    #TODO: implement n so we can get n posts
+    #TODO: implement a way to detect when "n" is unreachable... I assume this is whenever after is none
 def search(term, n): 
     links = set()
 
@@ -26,6 +26,7 @@ def search(term, n):
     print(after)
 
     while len(links) < n: 
+
         print(after)
         print("trying to find more posts", len(links))
         result = requests.get(url =f"https://www.reddit.com/search/.json?q={term}&after={after}",  headers = {'User-agent': 'your bot 0.1'}).json()
