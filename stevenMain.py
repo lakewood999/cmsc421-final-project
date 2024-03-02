@@ -1,3 +1,4 @@
+from more_itertools import last
 import praw, dotenv, os
 import pandas as pd
 from flair.data import Sentence
@@ -22,6 +23,26 @@ reddit = praw.Reddit(
     password=os.getenv('REDDIT_PASSWORD')
 )
 
+def expand_comments(submission, limit: int = 3) -> list:
+    """Expands a Reddit submission to include its comments.
+
+    :param praw.models.Submission submission: The submission to expand.
+    :return: A list containing the submission and its comments.
+    """
+    # Expand the submission
+    submission.comments.replace_more(limit=limit)
+    # Extract the comments
+    comments = submission.comments.list()
+    # Parse the comments
+    comments = [
+        {
+            'body': comment.body,
+            'url': comment.permalink,
+            'score': comment.score
+        } for comment in comments if comment.body != '[removed]' and comment.body != '[deleted]'
+    ]
+    return comments
+
 def topic_search(query: str, subreddit: str, target_posts: int = 10, include_comments: bool = False, prefer_recent: bool = True) -> list:
     """Uses the Reddit API to search for posts related to a given query.
 
@@ -33,13 +54,24 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, include_com
     :return: A list of processed search results
     """
     search_results = []
-    num_posts_to_search = int(target_posts * 1.5)  # Search more posts than needed to account for removed/deleted posts
-    for submission in reddit.subreddit(subreddit).search(query, limit=num_posts_to_search, sort='new' if prefer_recent else 'relevance'):
+    num_posts_to_search = int(target_posts * 2)  # Search more posts than needed to account for removed/deleted posts
+    kwargs = {
+        'limit': num_posts_to_search,
+        'sort': 'new' if prefer_recent else 'relevance'
+    }
+    call = reddit.subreddit(subreddit).search(query, **kwargs)
+    added = 0
+    for submission in call:
+        if added >= target_posts:
+            break
         # Skip removed or deleted posts
         if submission.selftext == '[removed]' or submission.selftext == '[deleted]':
             continue
         # Include only self-posts
         if not submission.is_self:
+            continue
+        # Drop nsfw
+        if submission.over_18:
             continue
         # Add the post to the search results
         search_results.append({
@@ -48,14 +80,9 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, include_com
             'score': submission.score,
             'upvote_ratio': submission.upvote_ratio,
             'body': submission.selftext,
-            'comments': [
-                {
-                    'body': comment.body,
-                    'url': comment.permalink,
-                    'score': comment.score 
-                } for comment in submission.comments # TODO: more robust comments handling, maybe nested replies?
-            ] if include_comments else None
+            'comments': expand_comments(submission) if include_comments else None
         })
+        added += 1
     return search_results
 
 def results_to_dataframe(results: list) -> pd.DataFrame:
@@ -84,7 +111,7 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
     :return: The original DataFrame with an additional column containing the sentiment analysis results.
     """
     # Convert body to Flair sentences
-    df['sentence'] = df[column].apply(lambda x: Sentence(x))
+    df['sentence'] = df[column].apply(lambda x: Sentence(x)) # type: ignore
     # Perform sentiment analysis
     df['sentence'].apply(lambda x: tagger.predict(x))
     df['sentiment_result'] = df['sentence'].apply(lambda x: x.labels[0].value)
@@ -97,4 +124,4 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
 results = topic_search('donald trump judgement', 'politics', 5, True)
 df = results_to_dataframe(results)
 df = sentiment_analysis(df)
-print(df.head())
+print(df.head(n=30))
