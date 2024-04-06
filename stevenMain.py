@@ -1,7 +1,5 @@
-from ast import Tuple
 from dataclasses import dataclass, field
-from multiprocessing import heap
-from typing import List, Tuple
+from typing import List
 import praw, praw.models, dotenv, os, heapq, json
 import pandas as pd
 from flair.data import Sentence
