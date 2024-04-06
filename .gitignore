@@ -3,3 +3,4 @@ js_src/node_modules
 results.*
 settings.json
 .vsls.json
+__pycache__
