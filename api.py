@@ -30,7 +30,7 @@ class PrioritizedComment:
     comment: praw.models.Comment | praw.models.MoreComments = field(compare=False)
     parent: str = field(compare=False)
 
-def expand_comments(submission, limit: int = 3, total_limit: int = -1) -> list:
+def expand_comments(submission, post_id, limit: int = 3, total_limit: int = -1) -> list:
     """Expands a Reddit submission to include its comments up to an optional depth limit.
     Also allows a total comment limit which will stop expanding comments once reached, no matter
     the depth or overall progress.
@@ -42,7 +42,7 @@ def expand_comments(submission, limit: int = 3, total_limit: int = -1) -> list:
     """
     # Queue will be in format of (comment, depth, parent)
     final_comments = []
-    comments_queue: List[PrioritizedComment] = [PrioritizedComment(1, comment, "post") for comment in submission.comments.list()]  # Seed with top-level comments
+    comments_queue: List[PrioritizedComment] = [PrioritizedComment(1, comment, f"post-{post_id}") for comment in submission.comments]  # Seed with top-level comments
     while len(comments_queue) > 0 and (total_limit == -1 or len(final_comments) < total_limit):
         c = heapq.heappop(comments_queue)
         depth, comment, parent = c.priority, c.comment, c.parent
@@ -55,8 +55,9 @@ def expand_comments(submission, limit: int = 3, total_limit: int = -1) -> list:
                     'url': comment.permalink,
                     'score': comment.score,
                     'parent': parent,
+                    'id': f'comment-{comment.id}'
                 })
-                comments_queue.extend([PrioritizedComment(depth + 1, reply, comment.id) for reply in comment.replies.list()])
+                comments_queue.extend([PrioritizedComment(depth + 1, reply, f"comment-{comment.id}") for reply in comment.replies])
                 heapq.heapify(comments_queue)
         elif isinstance(comment, praw.models.MoreComments):
             comments_queue.extend([PrioritizedComment(depth, reply, parent) for reply in comment.comments()])
@@ -89,8 +90,8 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_de
         if submission.selftext == '[removed]' or submission.selftext == '[deleted]':
             continue
         # Include only self-posts
-        if submission.is_self:
-            continue
+        #if not submission.is_self:
+        #    continue
         # Drop nsfw
         if submission.over_18:
             continue
@@ -102,7 +103,8 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_de
             'score': submission.score,
             'upvote_ratio': submission.upvote_ratio,
             'body': submission.selftext,
-            'comments': expand_comments(submission, comments_depth, max_comments)
+            'id': f"post-{submission.id}",
+            'comments': expand_comments(submission, submission.id, comments_depth, max_comments)
         })
         added += 1
     return search_results
@@ -114,11 +116,11 @@ def results_to_dataframe(results: list) -> pd.DataFrame:
     :return: A pandas DataFrame containing the search results.
     """
     # Rearrange results into more of a dataframe structures
-    processed_posts = [{ "title": post['title'], 'url': post['url'], 'body': post['body'], 'type': 'post' } for post in results]
+    processed_posts = [{ "title": post['title'], 'url': post['url'], 'body': post['body'], 'type': 'post', 'parent': 'none', 'id': post['id'] } for post in results]
     comment_blocks = [post['comments'] for post in results if post['comments'] is not None]
     # Flatten the list of comments
     comments = [comment for block in comment_blocks for comment in block]
-    processed_comments = [{ "title": "Comment", 'url': comment['url'], 'body': comment['body'], 'type': 'comment' } for comment in comments]
+    processed_comments = [{ "title": "Comment", 'url': comment['url'], 'body': comment['body'], 'type': 'comment', 'parent': comment['parent'], 'id': comment['id'] } for comment in comments]
     # Combine the posts and comments into a single list
     combined = processed_posts + processed_comments
     # Convert the list to a DataFrame
