@@ -65,13 +65,14 @@ def expand_comments(submission, limit: int = 3, total_limit: int = -1) -> list:
             heapq.heapify(comments_queue)
     return final_comments
 
-def topic_search(query: str, subreddit: str, target_posts: int = 10, include_comments: bool = False, prefer_recent: bool = True) -> list:
+def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_depth: int = 3, max_comments: int = -1, prefer_recent: bool = True) -> list:
     """Uses the Reddit API to search for posts related to a given query.
 
     :param str query: The search term to use.
     :param str subreddit: The subreddit to search in.
     :param int target_posts: The number of posts to retrieve.
-    :param bool include_comments: Whether to include comments in the search results. Defaults to False.
+    :param int comments_depth: The depth of comments to retrieve. Defaults to 3. 
+    :param int max_comments: The maximum number of comments to retrieve PER POST. Defaults to -1 (no limit).
     :param bool prefer_recent: Whether to prefer recent posts. Defaults to True.
     :return: A list of processed search results
     """
@@ -103,7 +104,7 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, include_com
             'score': submission.score,
             'upvote_ratio': submission.upvote_ratio,
             'body': submission.selftext,
-            'comments': expand_comments(submission) if include_comments else None
+            'comments': expand_comments(submission, comments_depth, max_comments)
         })
         added += 1
     return search_results
@@ -134,7 +135,7 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
     :return: The original DataFrame with an additional column containing the sentiment analysis results.
     """
     # Drop any rows with empty bodies
-    df = df[df[column] != '']
+    df = df[df[column] != ''].copy()
     # Convert body to Flair sentences
     df['sentence'] = df[column].apply(lambda x: Sentence(x)) # type: ignore
     # Perform sentiment analysis
@@ -146,7 +147,7 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
     return df
 
 # Example usage
-results = topic_search('donald trump trial', 'politics', 5, True)
+results = topic_search('donald trump trial', 'politics', 10, 3, 50)
 json.dump(results, open('results.json', 'w'), indent=4)
 input('Results saved. Press enter to continue with analysis...')
 df = results_to_dataframe(results)
