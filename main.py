@@ -1,6 +1,6 @@
-from crypt import methods
+#from crypt import methods
 from flask import Flask, jsonify, render_template, request
-from api import topic_search, results_to_dataframe
+from api import topic_search, results_to_dataframe, analyse_sentence
 
 app = Flask(__name__)
 
@@ -35,7 +35,30 @@ def api_search():
 # I'm not sure how we want to structure the data input for sentiment analysis, so this will be a TODO
 @app.route("/api/sentiment", methods=["POST"])
 def api_sentiment():
-    raise NotImplementedError("Sentiment analysis is not implemented")
+    """
+    Responsible for taking in the string from each post and comment and doing sentiment analysis
+    on the string using whichever library we decide on.
+    """
+    req = request.get_json()
+    if req is None:
+        return jsonify({"error": "Invalid request"})
+    
+    sentences = req.get("reddit_text", "")
+    dict_list = []
+    for sentence in sentences:
+        if len(sentence) == 0:
+            lab = 'Empty'
+            scr = 1.0000
+        else:
+            try:
+                lab, scr = analyse_sentence(sentence)
+            except RuntimeError:
+                lab = 'Error'
+                scr = 0.0000
+        ret_dict = {"body": sentence, "label": lab, "score": scr}
+        dict_list.append(ret_dict)
+    
+    return jsonify({"results": dict_list})
 
 if __name__ == '__main__':
     app.run()

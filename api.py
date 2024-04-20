@@ -4,13 +4,16 @@ from typing import List
 import praw, praw.models, os, dotenv
 from prawcore.exceptions import PrawcoreException
 import pandas as pd
-#from nltk.sentiment import SentimentIntensityAnalyzer
-#import nltk
-from flair.data import Sentence
-from flair.nn import Classifier
-
+import numpy as np
+from scipy.special import softmax
+from transformers import AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoConfig
 # Load the sentiment analysis model
-tagger = Classifier.load('sentiment')
+model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+config = AutoConfig.from_pretrained(model_path)
+# PT
+model = AutoModelForSequenceClassification.from_pretrained(model_path)
 
 # Securely store credentials in a .env file
 dotenv.load_dotenv()
@@ -107,6 +110,8 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_de
             'comments': expand_comments(submission, submission.id, comments_depth, max_comments)
         })
         added += 1
+        if added >= 2000:
+            break
     return search_results
 
 def results_to_dataframe(results: list) -> pd.DataFrame:
@@ -126,3 +131,25 @@ def results_to_dataframe(results: list) -> pd.DataFrame:
     # Convert the list to a DataFrame
     df = pd.DataFrame(combined)
     return df
+
+def analyse_sentence(sentence: str) -> (str, float):
+    
+    def preprocess_text(words: str) -> str:
+        new_text = []
+        for t in words.split(" "):
+            t = 'u/user' if t.startswith('u/') and len(t) > 2 else t
+            t = 'r/sub' if t.startswith('r/') and len(t) > 2 else t
+            t = 'http' if t.startswith('http') else t
+            new_text.append(t)
+        return " ".join(new_text)
+    
+    text = preprocess_text(sentence)
+    encoded_input = tokenizer(text, return_tensors='pt')
+    output = model(**encoded_input)
+    scores = output[0][0].detach().numpy()
+    scores = softmax(scores)
+    ranking = np.argsort(scores)
+    ranking = ranking[::-1]
+    l = config.id2label[ranking[0]]
+    s = float(scores[ranking[0]])
+    return l,s
