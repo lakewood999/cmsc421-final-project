@@ -2,9 +2,11 @@ import React from "react";
 import useDataStore from "./datastore";
 import { dataToNested } from "./helpers";
 import Markdown from 'react-markdown'
+import SentimentDisplay from "./SentimentDisplay";
 
 const DisplayComment = (props: { commentId: string }) => {
     const data = useDataStore((state) => state.redditData);
+    const sentimentData = useDataStore((state) => state.sentimentData);
     const { nested, parentData } = dataToNested(data);
 
     const comment = parentData[props.commentId];
@@ -19,6 +21,7 @@ const DisplayComment = (props: { commentId: string }) => {
 
     return (
         <div className="ms-3 ps-2" style={{ borderLeft: "1px solid black" }}>
+            <SentimentDisplay sentiment={sentimentData[comment.id]} />
             <p><Markdown>{comment.body}</Markdown></p>
             <div>
                 {renderedChildren}

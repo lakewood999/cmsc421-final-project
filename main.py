@@ -1,6 +1,7 @@
 from crypt import methods
 from flask import Flask, jsonify, render_template, request
-from api import topic_search, results_to_dataframe
+from api import sentiment_analysis, topic_search, results_to_dataframe
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -35,7 +36,20 @@ def api_search():
 # I'm not sure how we want to structure the data input for sentiment analysis, so this will be a TODO
 @app.route("/api/sentiment", methods=["POST"])
 def api_sentiment():
-    raise NotImplementedError("Sentiment analysis is not implemented")
+    """
+    Takes in a list of the results from the search api and runs the sentiment analysis on them,
+    returning a object with the id identifying the post/comment and a numerical score for sentiment.
+    """
+    content = request.get_json()
+    if content is None:
+        return jsonify({"error": "Invalid request"})
+
+    # convert the content into a dataframe
+    df = pd.DataFrame(content)
+    # run the sentiment analysis
+    sentiment_df = sentiment_analysis(df)
+    
+    return jsonify({"results": sentiment_df.to_dict(orient="records")})
 
 if __name__ == '__main__':
     app.run()

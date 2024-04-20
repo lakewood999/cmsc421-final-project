@@ -126,3 +126,23 @@ def results_to_dataframe(results: list) -> pd.DataFrame:
     # Convert the list to a DataFrame
     df = pd.DataFrame(combined)
     return df
+
+def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
+    """Uses the flair library to perform sentiment analysis on a DataFrame.
+
+    :param pd.DataFrame df: The DataFrame to perform sentiment analysis on.
+    :param str column: The column to perform sentiment analysis on. Defaults to 'body'.
+    :return: The original DataFrame with an additional column containing the sentiment analysis results.
+    """
+    # Drop any rows with empty bodies
+    df = df[df[column] != ''].copy()
+    # Convert body to Flair sentences
+    df['sentence'] = df[column].apply(lambda x: Sentence(x)) # type: ignore
+    # Perform sentiment analysis
+    df['sentence'].apply(lambda x: tagger.predict(x))
+    df['sentiment_result'] = df['sentence'].apply(lambda x: x.labels[0].value)
+    df['sentiment_score'] = df['sentence'].apply(lambda x: x.labels[0].score)
+    # Drop the intermediate columns
+    df.drop(columns=['sentence'], inplace=True)
+    return df
+

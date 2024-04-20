@@ -5,7 +5,7 @@ export type ResultRow = {
     type: string,
     url: string,
     id: string,
-    depth: number
+    depth: number,
 }
 
 // TODO: We need to cache dataToNested
@@ -19,21 +19,21 @@ export type ResultRow = {
  * @returns 
  */
 export function dataToNested(data: ResultRow[]) {
-    let nested: {[key: string]: ResultRow[]} = {}
-    let parentData: {[key: string]: ResultRow } = {}
+    let nested: { [key: string]: ResultRow[] } = {}
+    let parentData: { [key: string]: ResultRow } = {}
     for (const row of data) {
         if (row.type === "post") {
             nested[row.id] = []
-            parentData[row.id] = {...row, depth: 0}
+            parentData[row.id] = { ...row, depth: 0 }
         } else {
             // handle the comments
             if (!nested.hasOwnProperty(row.parent)) {
                 nested[row.parent] = []
             }
-            const mod_row = {...row, depth: parentData[row.parent].depth + 1}
+            const mod_row = { ...row, depth: parentData[row.parent].depth + 1 }
             nested[row.parent].push(mod_row)
             parentData[row.id] = mod_row
         }
     }
-    return {nested, parentData}
+    return { nested, parentData }
 }
