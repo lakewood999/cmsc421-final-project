@@ -8,6 +8,12 @@ export type ResultRow = {
     depth: number
 }
 
+export type SentRow = {
+    body: string
+    label: string
+    score: number
+}
+
 // TODO: We need to cache dataToNested
 
 /**
@@ -36,4 +42,21 @@ export function dataToNested(data: ResultRow[]) {
         }
     }
     return {nested, parentData}
+}
+
+export function find_step_sizes(total: number, batch: number) {
+    const step_list: number[] = []
+    let factor: number = 1
+    while (total - factor*batch > 0) {
+        factor = factor + 1
+    }
+    const extra = total - factor*batch
+    for (let i=0; i < 25; i++) {
+        if (i < (25 + extra)) {
+            step_list.push(factor)
+        } else {
+            step_list.push(factor - 1)
+        }
+    }
+    return step_list
 }
