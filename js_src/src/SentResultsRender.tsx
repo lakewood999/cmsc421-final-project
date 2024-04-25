@@ -34,12 +34,23 @@ const SentResultsRender = () => {
 
         const pos_per: number = pos/analyzed
         const neg_per: number = neg/analyzed  
-        const neu_per: number = neu/analyzed 
+        const neu_per: number = neu/analyzed
+        
+        let sum_str: string = ""
+        if ((neu_per > 0.6) || (Math.abs(pos_per - neg_per) < 0.1)) {
+            sum_str = 'mixed'
+        } else if (pos_per > neg_per) {
+            sum_str = 'positive'
+        } else {
+            sum_str = 'negative'
+        }
         
         body = [<p> The number of posts we were able to analyze was {analyzed.toString()}. </p>,
-                <p> The number of posts with postive sentiment was {pos.toString()}. </p>, 
-                <p> The number of posts with neutral sentiment was {neu.toString()}. </p>,
-                <p> The number of posts with negative sentiment was {neg.toString()}. </p>]
+                <p> The number of posts with <span style={{color: "green"}}>postive</span> sentiment was {pos.toString()} ({Math.round((Math.abs(pos_per) + Number.EPSILON) * 100)}%). </p>, 
+                <p> The number of posts with <span style={{color: "gray"}}>neutral</span> sentiment was {neu.toString()} ({Math.round((Math.abs(neu_per) + Number.EPSILON) * 100)}%). </p>,
+                <p> The number of posts with <span style={{color: "red"}}>negative</span> sentiment was {neg.toString()} ({Math.round((Math.abs(neg_per) + Number.EPSILON) * 100)}%). </p>,
+                <p> The number of posts we had an <span style={{color: "#CCCC00"}}>error</span> anlayzing was {err.toString()}. </p>,
+                <p> Overall, the sentiment was {sum_str} in the posts we analyzed. </p>]
     } 
     
     

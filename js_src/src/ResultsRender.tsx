@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useDataStore from "./datastore";
 import { ResultRow } from "./helpers";
 import DisplayPost from "./DisplayPost";
 
 const ResultsRender = () => {
     const data: ResultRow[] = useDataStore((state) => state.redditData)
+    const sents: ResultRow[] = useDataStore((state) => state.sentData)
+
+    useEffect(() => { const dummy = 1}, [sents])
+
     let body = [<p>No data available yet. Please make a search to continue!</p>];
     if (data === null) {
         body

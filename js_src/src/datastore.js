@@ -3,7 +3,7 @@ import {create} from 'zustand';
 const useDataStore = create((set, get) => ({
     redditData: null,
     setRedditData: (data) => set({redditData: data}),
-    sentData: null,
+    sentData: [],
     setSentData: (data) => set({sentData: data})
 }));
 

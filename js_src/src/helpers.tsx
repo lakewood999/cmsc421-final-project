@@ -10,6 +10,7 @@ export type ResultRow = {
 
 export type SentRow = {
     body: string
+    id: string
     label: string
     score: number
 }

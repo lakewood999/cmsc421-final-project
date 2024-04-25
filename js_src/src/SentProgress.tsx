@@ -56,7 +56,7 @@ const SentProgress = () => {
                         console.log(sentoutput.results);
                         //const toAdd = []
                         for (let i = 0; i < sentoutput.results.length; i++) {
-                            const newRow = {id: (sents.current.length + i), body: sentoutput.results[i].body, label: sentoutput.results[i].label, score: sentoutput.results[i].score}
+                            const newRow = {body: sentoutput.results[i].body, id: (data[row.current + i].id), label: sentoutput.results[i].label, score: sentoutput.results[i].score}
                             //{id: (sents.length + i), body: sentoutput.results[i].body, label: sentoutput.results[i].label, score: sentoutput.results[i].score}
                             //toAdd.push(newRow)
                             sents.current.push(newRow)
@@ -97,11 +97,10 @@ const SentProgress = () => {
         console.log(iters)
     } else if ((data.length > 0) && (iters >= batches)) { 
         body = [<> <progress value={1.0}></progress> </>];
-        console.log(sents.current);
     }
     return (
         <div>
-            <h1>Sentiment Analysis</h1>
+            <h1>Sentiment Analysis Summary</h1>
             {body}
         </div>
     )
