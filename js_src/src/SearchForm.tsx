@@ -14,11 +14,16 @@ async function getSentiment(data: ResultRow[], callback: (results: object[]) => 
     callback(results.results!);
 }
 
-function sentimentCallback(results: SentimentResult[], setData: (data: object) => void) {
+function sentimentCallback(results: SentimentResult[], setData: (data: object) => void, method: string = "flair") {
     const resultDict = results.reduce((acc, result) => {
-        acc[result.id] = result.sentiment_result === "NEGATIVE" ? -1 : 1 * result.sentiment_score;
+        const resultDict: { [key: string]: { label: string, score: number } } = {};
+        resultDict[method] = {
+            label: result.sentiment_result === "NEGATIVE" ? "negative" : "positive",
+            score: result.sentiment_result === "NEGATIVE" ? -1 : 1 * result.sentiment_score,
+        }
+        acc[result.id] = resultDict;
         return acc;
-    }, {} as { [key: string]: number });
+    }, {} as { [key: string]: { [key: string]: { label: string, score: number } } });
     setData(resultDict);
 }
 

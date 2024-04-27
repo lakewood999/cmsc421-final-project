@@ -7,14 +7,13 @@ import SentimentDisplay from "./SentimentDisplay";
 
 const DisplayPost = (props: { postId: string }) => {
     const data = useDataStore((state) => state.redditData);
-    const sentimentData = useDataStore((state) => state.sentimentData);
     const { nested, parentData } = dataToNested(data);
 
     const post = parentData[props.postId]
     const children = nested[props.postId]
 
     const sentiment_display = (post.body === '') ?
-        null : <SentimentDisplay sentiment={sentimentData[post.id]} />;
+        null : <SentimentDisplay objId={props.postId} />;
 
     return (
         <div className="card mb-3">

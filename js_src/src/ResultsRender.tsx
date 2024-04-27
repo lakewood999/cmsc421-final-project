@@ -4,7 +4,7 @@ import { ResultRow } from "./helpers";
 import DisplayPost from "./DisplayPost";
 
 const ResultsRender = () => {
-    const data: ResultRow[] = useDataStore((state) => state.redditData)
+    const data: ResultRow[] = useDataStore((state) => state.redditData);
     let body = [<p>No data available yet. Please make a search to continue!</p>];
     if (data === null) {
         body
