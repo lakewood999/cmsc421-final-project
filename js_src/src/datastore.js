@@ -16,9 +16,9 @@ const useDataStore = create((set, get) => ({
                 current[key] = data[key];
             }
         }
-        console.log(current)
         set({ sentimentData: current });
     },
+    // allow showing multiple models
     sentimentMode: "flair",
     setSentimentMode: (mode) => set({ sentimentMode: mode }),
 }));

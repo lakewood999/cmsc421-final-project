@@ -6,9 +6,6 @@ const SentimentDisplay = (props: { objId: string }) => {
     const sentimentData = useDataStore((state) => state.sentimentData);
 
     const sentimentResult = sentimentData[props.objId];
-    console.log(sentimentResult)
-    console.log(props.objId)
-    console.log(sentimentData)
     if (sentimentResult === undefined) {
         return <span className="badge bg-secondary me-3">
             <div className="spinner-border spinner-border-sm" role="status">
