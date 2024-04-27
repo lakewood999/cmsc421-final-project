@@ -171,9 +171,7 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
         df['output'] = df['tokens'].apply(lambda x: model(**x))
         df['scores'] = df['output'].apply(lambda x: softmax(x[0][0].detach().numpy()))
         df['ranking'] = df['scores'].apply(lambda x: x.argsort()[::-1])
-        print(df['ranking'])
         df['sentiment_result'] = df['ranking'].apply(lambda x: config.id2label[x[0]])
-        print(df['sentiment_result'])
         df['first_ranking'] = df['ranking'].apply(lambda x: x[0])
         # only do the below if first_ranking isn't empty
         if not df['first_ranking'].empty:
