@@ -43,11 +43,15 @@ def api_sentiment():
     content = request.get_json()
     if content is None:
         return jsonify({"error": "Invalid request"})
+    if "data" not in content:
+        return jsonify({"error": "Missing data"})
+    if "method" not in content:
+        return jsonify({"error": "Missing method"})
 
     # convert the content into a dataframe
-    df = pd.DataFrame(content)
+    df = pd.DataFrame(content['data'])
     # run the sentiment analysis
-    sentiment_df = sentiment_analysis(df)
+    sentiment_df = sentiment_analysis(df, mode=content['method'])
     
     return jsonify({"results": sentiment_df.to_dict(orient="records")})
 

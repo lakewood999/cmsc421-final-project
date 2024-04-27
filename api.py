@@ -2,12 +2,21 @@ from dataclasses import dataclass, field
 import heapq
 from typing import List
 import praw, praw.models, os, dotenv
-from prawcore.exceptions import PrawcoreException
 import pandas as pd
 #from nltk.sentiment import SentimentIntensityAnalyzer
 #import nltk
 from flair.data import Sentence
 from flair.nn import Classifier
+from scipy.special import softmax
+from transformers import AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoConfig
+
+# Load the sentiment analysis model
+model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+config = AutoConfig.from_pretrained(model_path)
+# PT
+model = AutoModelForSequenceClassification.from_pretrained(model_path)
 
 # Load the sentiment analysis model
 tagger = Classifier.load('sentiment')
@@ -127,7 +136,16 @@ def results_to_dataframe(results: list) -> pd.DataFrame:
     df = pd.DataFrame(combined)
     return df
 
-def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
+def hf_preprocess_text(words: str) -> str:
+    new_text = []
+    for t in words.split(" "):
+        t = 'u/user' if t.startswith('u/') and len(t) > 2 else t
+        t = 'r/sub' if t.startswith('r/') and len(t) > 2 else t
+        t = 'http' if t.startswith('http') else t
+        new_text.append(t)
+    return " ".join(new_text)
+
+def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flair") -> pd.DataFrame:
     """Uses the flair library to perform sentiment analysis on a DataFrame.
 
     :param pd.DataFrame df: The DataFrame to perform sentiment analysis on.
@@ -136,13 +154,32 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body') -> pd.DataFrame:
     """
     # Drop any rows with empty bodies
     df = df[df[column] != ''].copy()
-    # Convert body to Flair sentences
-    df['sentence'] = df[column].apply(lambda x: Sentence(x)) # type: ignore
-    # Perform sentiment analysis
-    df['sentence'].apply(lambda x: tagger.predict(x))
-    df['sentiment_result'] = df['sentence'].apply(lambda x: x.labels[0].value)
-    df['sentiment_score'] = df['sentence'].apply(lambda x: x.labels[0].score)
-    # Drop the intermediate columns
-    df.drop(columns=['sentence'], inplace=True)
+    if mode == "flair":
+        # Convert body to Flair sentences
+        df['sentence'] = df[column].apply(lambda x: Sentence(x)) # type: ignore
+        # Perform sentiment analysis
+        df['sentence'].apply(lambda x: tagger.predict(x))
+        df['sentiment_result'] = df['sentence'].apply(lambda x: x.labels[0].value)
+        df['sentiment_score'] = df['sentence'].apply(lambda x: x.labels[0].score)
+        # Drop the intermediate columns
+        df.drop(columns=['sentence'], inplace=True)
+    elif mode == "hf":
+        # Preprocess text
+        df['sentence'] = df[column].apply(lambda x: hf_preprocess_text(x))
+        # tokenize
+        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, return_tensors="pt"))
+        df['output'] = df['tokens'].apply(lambda x: model(**x))
+        df['scores'] = df['output'].apply(lambda x: softmax(x[0][0].detach().numpy()))
+        df['ranking'] = df['scores'].apply(lambda x: x.argsort()[::-1])
+        print(df['ranking'])
+        df['sentiment_result'] = df['ranking'].apply(lambda x: config.id2label[x[0]])
+        print(df['sentiment_result'])
+        df['first_ranking'] = df['ranking'].apply(lambda x: x[0])
+        # only do the below if first_ranking isn't empty
+        if not df['first_ranking'].empty:
+            df['sentiment_score'] = df.apply(lambda x: x['scores'][x['first_ranking']], axis=1)
+        #df['sentiment_score'] = df.apply(lambda x: x['scores'][x['ranking'][0]], axis=1)
+        # Drop the intermediate columns
+        df.drop(columns=['sentence', 'tokens', 'output', 'scores', 'ranking'], inplace=True)
     return df
 

@@ -2,13 +2,13 @@ import React from "react";
 import useDataStore from "./datastore";
 import { ResultRow, dataToNested } from "./helpers";
 
-async function getSentiment(data: ResultRow[], callback: (results: object[]) => void) {
+async function getSentiment(data: ResultRow[], callback: (results: object[]) => void, method: string = "flair") {
     const response = await fetch("/api/sentiment", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ data: data, method: method }),
     });
     const results = await response.json();
     callback(results.results!);
@@ -18,8 +18,8 @@ function sentimentCallback(results: SentimentResult[], setData: (data: object) =
     const resultDict = results.reduce((acc, result) => {
         const resultDict: { [key: string]: { label: string, score: number } } = {};
         resultDict[method] = {
-            label: result.sentiment_result === "NEGATIVE" ? "negative" : "positive",
-            score: result.sentiment_result === "NEGATIVE" ? -1 : 1 * result.sentiment_score,
+            label: result.sentiment_result.toLowerCase(),
+            score: result.sentiment_score,
         }
         acc[result.id] = resultDict;
         return acc;
@@ -73,7 +73,8 @@ export default function SearchForm() {
                 // grab the sentiment for posts - these are items in nestedData with "post-*" as the key
                 const posts = Object.keys(nestedData.nested).filter((key) => key.startsWith("post-"));
                 const postsData = posts.map((post) => nestedData.parentData[post]);
-                getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData));
+                getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "flair"), "flair");
+                getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "hf"), "hf");
 
                 // grab the sentiment for comments, preferring top level comments
                 // TODO: need to actually include depth to sort by it
@@ -86,7 +87,8 @@ export default function SearchForm() {
                 // sort by depth, so we get top level comments first
                 //commentsData.sort((a, b) => a.depth - b.depth);
                 for (const group of commentGroups) {
-                    getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData));
+                    getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "flair"), "flair");
+                    getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "hf"), "hf");
                 }
             })
             .catch((error) => {

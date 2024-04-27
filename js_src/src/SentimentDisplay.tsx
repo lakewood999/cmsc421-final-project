@@ -6,7 +6,7 @@ const SentimentDisplay = (props: { objId: string }) => {
     const sentimentData = useDataStore((state) => state.sentimentData);
 
     const sentimentResult = sentimentData[props.objId];
-    if (sentimentResult === undefined) {
+    if (sentimentResult === undefined || sentimentResult[sentimentMode] === undefined) {
         return <span className="badge bg-secondary me-3">
             <div className="spinner-border spinner-border-sm" role="status">
                 <span className="visually-hidden">Loading...</span>
@@ -14,7 +14,8 @@ const SentimentDisplay = (props: { objId: string }) => {
         </span>
     } else {
         let sentimentScore = sentimentResult[sentimentMode].score;
-        return <span className={`badge bg-${sentimentScore > 0 ? "success" : sentimentScore < 0 ? "danger" : "warning"}`}>
+        let sentimentLabel = sentimentResult[sentimentMode].label;
+        return <span className={`badge bg-${sentimentLabel === "positive" ? "success" : sentimentLabel === "negative" ? "danger" : "warning"}`}>
             {Math.round((sentimentScore + Number.EPSILON) * 100) / 100}
         </span>
     }
