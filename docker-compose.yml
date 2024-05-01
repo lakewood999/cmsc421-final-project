@@ -10,6 +10,8 @@ services:
       - "5000:80"
     environment:
       - HF_HOME=/.cache/huggingface
+      - FLAIR_CACHE_ROOT=/.cache/flair
     volumes:
       - .env:/app/.env:ro
       - ./hf_cache:/.cache/huggingface:rw
+      - ./flair_cache:/.cache/flair:rw
