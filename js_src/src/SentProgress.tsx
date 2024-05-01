@@ -6,7 +6,7 @@ const SentProgress = () => {
     const redditData = useDataStore((state) => state.redditData);
     const numModes = useDataStore((state) => state.numModes);
 
-    let body = [<> <progress value={0.0}></progress> </>];
+    let body = [<div className="progress"><div className="progress-bar" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={100}></div></div>];
     if (redditData === null) {
         body
     } else {
@@ -16,7 +16,7 @@ const SentProgress = () => {
         console.log(total)
         console.log(completed)
         const prog: number = completed / total;
-        body = [<> <progress value={prog}></progress>  </>];
+        body = [<div className="progress"><div className="progress-bar" role="progressbar" style={{ width: `${prog}%` }} aria-valuenow={prog} aria-valuemin={0} aria-valuemax={100}></div></div>];
     }
     return (
         <div>

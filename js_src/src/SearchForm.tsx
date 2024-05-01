@@ -43,13 +43,17 @@ export default function SearchForm() {
     // Internal state
     const [isLoading, setIsLoading] = React.useState(false);
     const [showAdvanced, setShowAdvanced] = React.useState(false);
-    const [errorString, setErrorString] = React.useState(""); // TODO: implement error handling
+    const [_, setErrorString] = React.useState(""); // TODO: implement error handling
 
     const setRedditData = useDataStore((state) => state.setRedditData);
     const setSentimentData = useDataStore((state) => state.setSentimentData);
+    const dangerouslySetSentimentData = useDataStore((state) => state.dangerouslySetSentimentData);
 
     const apiCall = () => {
         setIsLoading(true);
+        // clear out old data
+        setRedditData(null);
+        dangerouslySetSentimentData({});
         fetch("/api/search", {
             method: "POST",
             headers: {

@@ -4,6 +4,7 @@ const useDataStore = create((set, get) => ({
     redditData: null,
     setRedditData: (data) => set({ redditData: data }),
     sentimentData: {},
+    dangerouslySetSentimentData: (data) => set({ sentimentData: data }), // only used for resetting
     // append to the current sentiment data
     setSentimentData: (data) => {
         // merge the new data with the existing data
