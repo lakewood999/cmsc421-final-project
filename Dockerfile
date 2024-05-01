@@ -35,6 +35,7 @@ COPY --from=python /root/.local /root/.local
 RUN mkdir -p /app
 WORKDIR /app
 COPY static ./static/
+RUN rm -r ./static/js
 COPY templates ./templates/
 COPY main.py api.py .
 # Copy React build files

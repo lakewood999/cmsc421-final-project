@@ -8,5 +8,8 @@ services:
     restart: unless-stopped
     ports:
       - "5000:80"
+    environment:
+      - HF_HOME=/.cache/huggingface
     volumes:
       - .env:/app/.env:ro
+      - ./hf_cache:/.cache/huggingface:rw

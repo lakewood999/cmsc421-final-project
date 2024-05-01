@@ -4,3 +4,4 @@ results.*
 settings.json
 .vsls.json
 __pycache__
+hf_cache
