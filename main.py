@@ -56,4 +56,5 @@ def api_sentiment():
     return jsonify({"results": sentiment_df.to_dict(orient="records")})
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True, port=8084)
+

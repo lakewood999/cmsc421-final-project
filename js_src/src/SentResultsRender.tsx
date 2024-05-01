@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import useDataStore from "./datastore";
+import GaugeComponent from "react-gauge-component";
 
 const SentResultsRender = () => {
     const sents = useDataStore((state) => state.sentimentData);
     const sentimentMode = useDataStore((state) => state.sentimentMode);
 
     let body = [<p> Awaiting sentiment analysis to display results...</p>]
+    let gauge = [<p hidden>guage</p>]
     if ((Object.keys(sents).length === 0)) {
         body
     } else {
@@ -47,17 +49,48 @@ const SentResultsRender = () => {
             sum_str = 'negative'
         }
 
+ 
         body = [<p> The number of posts we were able to analyze was {analyzed.toString()}. </p>,
         <p> The number of posts with <span style={{ color: "green" }}>postive</span> sentiment was {pos.toString()} ({Math.round((Math.abs(pos_per) + Number.EPSILON) * 100)}%). </p>,
-        <p> The number of posts with <span style={{ color: "gray" }}>neutral</span> sentiment was {neu.toString()} ({Math.round((Math.abs(neu_per) + Number.EPSILON) * 100)}%). </p>,
+        <p> The number of posts with <span style={{ color: "#CCCC00" }}>neutral</span> sentiment was {neu.toString()} ({Math.round((Math.abs(neu_per) + Number.EPSILON) * 100)}%). </p>,
         <p> The number of posts with <span style={{ color: "red" }}>negative</span> sentiment was {neg.toString()} ({Math.round((Math.abs(neg_per) + Number.EPSILON) * 100)}%). </p>,
-        <p> The number of posts we had an <span style={{ color: "#CCCC00" }}>error</span> anlayzing was {err.toString()}. </p>,
+        <p> The number of posts we had an <span style={{ color: "gray" }}>error</span> anlayzing was {err.toString()}. </p>,
         <p> Overall, the sentiment was {sum_str} in the posts we analyzed. </p>]
+
+
+
+        
+        //recalculate percentages so it doesn't break the gauage while loading
+        let p = (pos_per*100 == 100 ? 99 : pos_per*100)
+        let nt = (p+(neu_per*100) > p ? (p+(neu_per*100)) :  p + .01)
+        let n = 100
+
+        // console.log("pos -> " + (p));
+        // console.log("neut -> " + (nt));
+        // console.log("neg -> " + (n));
+
+        gauge = [<GaugeComponent
+            type="semicircle"
+            arc={{
+              colorArray: ['#00FF15', '#FF2121'],
+              padding: 0.04,
+              subArcs:
+                [
+                  { limit: p},
+                  { limit: nt},
+                  { limit: n },
+                ]
+            }}
+            pointer={{type: "blob", animationDelay: 0 }}
+            value={pos_per*100-.01 < 0 ? nt : pos_per*100-.01}
+          />]
+        
     }
 
 
     return (
         <div>
+            {gauge},
             {body}
         </div>
     )
