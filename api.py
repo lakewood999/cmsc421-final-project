@@ -5,11 +5,15 @@ import praw, praw.models, os, dotenv
 import pandas as pd
 #from nltk.sentiment import SentimentIntensityAnalyzer
 #import nltk
+import flair
 from flair.data import Sentence
 from flair.nn import Classifier
 from scipy.special import softmax
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer, AutoConfig
+
+from pathlib import Path
+flair.cache_root = Path(os.getenv('FLAIR_CACHE_ROOT', '/.cache/flair'))
 
 # Load the sentiment analysis model
 model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
@@ -38,7 +42,6 @@ class PrioritizedComment:
     priority: int
     comment: praw.models.Comment | praw.models.MoreComments = field(compare=False)
     parent: str = field(compare=False)
-
 def expand_comments(submission, post_id, limit: int = 3, total_limit: int = -1) -> list:
     """Expands a Reddit submission to include its comments up to an optional depth limit.
     Also allows a total comment limit which will stop expanding comments once reached, no matter
@@ -167,7 +170,8 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
         # Preprocess text
         df['sentence'] = df[column].apply(lambda x: hf_preprocess_text(x))
         # tokenize
-        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, return_tensors="pt", padding=True, truncation=True))
+        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, truncation=True,
+                                                                max_length=500, return_tensors='pt'))
         df['output'] = df['tokens'].apply(lambda x: model(**x))
         df['scores'] = df['output'].apply(lambda x: softmax(x[0][0].detach().numpy()))
         df['ranking'] = df['scores'].apply(lambda x: x.argsort()[::-1])
