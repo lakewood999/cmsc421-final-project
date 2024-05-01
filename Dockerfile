@@ -18,6 +18,7 @@ COPY ./js_src/src/ ./src/
 # Build
 ARG PROD_BUILD
 RUN PROD_BUILD=${PROD_BUILD} npm run build
+RUN ls -al ../static/js
 
 ### BUILD STEP: python packages
 FROM python:3.12-bookworm AS python
@@ -39,7 +40,7 @@ RUN rm -r ./static/js
 COPY templates ./templates/
 COPY main.py api.py .
 # Copy React build files
-COPY --from=webpack /build/static/js/ ./static/js/
+COPY --from=webpack /static/js/ ./static/js/
 
 # Start
 CMD exec /root/.local/bin/gunicorn --bind 0.0.0.0:80 --reload main:app
