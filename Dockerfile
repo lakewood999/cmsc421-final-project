@@ -18,7 +18,6 @@ COPY ./js_src/src/ ./src/
 # Build
 ARG PROD_BUILD
 RUN PROD_BUILD=${PROD_BUILD} npm run build
-RUN ls -al ../static/js
 
 ### BUILD STEP: python packages
 FROM python:3.12-bookworm AS python
