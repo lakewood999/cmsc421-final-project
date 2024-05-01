@@ -167,7 +167,7 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
         # Preprocess text
         df['sentence'] = df[column].apply(lambda x: hf_preprocess_text(x))
         # tokenize
-        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, return_tensors="pt"))
+        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, return_tensors="pt", padding=True, truncation=True))
         df['output'] = df['tokens'].apply(lambda x: model(**x))
         df['scores'] = df['output'].apply(lambda x: softmax(x[0][0].detach().numpy()))
         df['ranking'] = df['scores'].apply(lambda x: x.argsort()[::-1])
