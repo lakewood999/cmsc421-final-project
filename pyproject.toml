@@ -16,6 +16,8 @@ transformers = "^4.40.1"
 torch = {version = "^2.3.0+cpu", source = "torch_no_gpu"}
 gunicorn = "^22.0.0"
 scipy = "<1.13"
+nltk = "^3.8.1"
+openai = "^1.25.1"
 
 [tool.poetry.dev-dependencies]
 
