@@ -12,6 +12,12 @@ from scipy.special import softmax
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer, AutoConfig
 
+import os
+from openai import OpenAI
+
+# Load the environment variable
+from dotenv import load_dotenv
+
 from pathlib import Path
 flair.cache_root = Path(os.getenv('FLAIR_CACHE_ROOT', '/.cache/flair'))
 
@@ -185,3 +191,40 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
         df.drop(columns=['sentence', 'tokens', 'output', 'scores', 'ranking'], inplace=True)
     return df
 
+# Function to request chatGPT for a summary of what is being said in the comments 
+def summarize_content(df: pd.DataFrame, column: str = 'body'):
+    """Summarizes the content of a DataFrame using OpenAI's ChatGPT.
+
+    :param pd.DataFrame df: The DataFrame containing the text to summarize.
+    :param str column: The name of the column in df that contains the text.
+    """
+    load_dotenv()
+
+    api_key = os.getenv('OPENAI_API_KEY')
+    client = OpenAI(api_key=api_key)
+
+    # Ensure that the DataFrame column exists and is not empty
+    if column in df and not df[column].isnull().all():
+        # Join all text items into a single string with new lines separating them
+        text_content = "\n".join(df[column].dropna().tolist())
+
+        # Prompt the API call
+        prompt = "Given the following array of opinions/comments provided, please generate a concise and informative summary that captures the key themes and perspectives expressed. Ensure the summary maintains a neutral and professional tone, presenting the opinions objectively without bias. Focus on distilling the main points and overarching sentiment conveyed in the array.\n\nHere are the opinions/comments: " + text_content
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo", 
+                messages=[{"role": "user", "content": prompt}]
+            )
+            # Check if the response is valid and print the summary
+            if response and response.choices and len(response.choices) > 0:
+                summary = response.choices[0].message.content
+                print("Generated summary:", summary)
+                return summary
+            else:
+                print("No response or unexpected response format.")
+                
+        except Exception as e:
+            print("Error during API call:", str(e))
+    else:
+        print("The specified column does not exist or is completely empty.")
