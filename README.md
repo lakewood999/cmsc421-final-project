@@ -7,3 +7,15 @@
 ## Docker
 1. `docker compose build` to create the `web` image, `docker compose up` with optional flag `-d` (for daemon/background
    mode) to run the server
+
+## Environment Variables
+
+For security purposes, API keys are not included in this repository. Please create a file named `.env` in the root
+directory of this project (same level as this README) and add the following lines and associated values:
+```
+REDDIT_CLIENT_ID='xxx'
+REDDIT_CLIENT_SECRET='xxx
+REDDIT_USER_AGENT='python:cmsc421:v0.1.0-beta (by /u/<username>)'
+REDDIT_USERNAME='xxx'
+REDDIT_PASSWORD='xxx'
+```
