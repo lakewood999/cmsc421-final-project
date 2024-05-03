@@ -1,6 +1,6 @@
 from crypt import methods
 from flask import Flask, jsonify, render_template, request
-from api import sentiment_analysis, topic_search, results_to_dataframe
+from api import sentiment_analysis, topic_search,  results_to_dataframe, summarize_content
 import pandas as pd
 
 app = Flask(__name__)
@@ -54,6 +54,24 @@ def api_sentiment():
     sentiment_df = sentiment_analysis(df, mode=content['method'])
     
     return jsonify({"results": sentiment_df.to_dict(orient="records")})
+
+# Get a summary 
+@app.route("/api/summarize", methods=["POST"])
+def api_summarize():
+
+    content = request.get_json()
+    if content is None:
+        return jsonify({"error": "Invalid request"})
+    if "data" not in content:
+        return jsonify({"error": "Missing data"})
+    if "method" not in content:
+        return jsonify({"error": "Missing method"})
+
+    # convert the content into a dataframe
+    df = pd.DataFrame(content['data'])
+    # run the sentiment analysis
+    summary = summarize_content(df)    
+    return jsonify({"summary": summary})
 
 if __name__ == '__main__':
     app.run(debug=True, port=8084)
