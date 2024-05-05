@@ -15,7 +15,7 @@ const SentimentDisplay = (props: { objId: string }) => {
     } else {
         let sentimentScore = sentimentResult[sentimentMode].score;
         let sentimentLabel = sentimentResult[sentimentMode].label;
-        return <span className={`badge bg-${sentimentLabel === "positive" ? "success" : sentimentLabel === "negative" ? "danger" : "warning"}`}>
+        return <span className={`me-3 badge bg-${sentimentLabel === "positive" ? "success" : sentimentLabel === "negative" ? "danger" : "warning"}`}>
             {Math.round((sentimentScore + Number.EPSILON) * 100) / 100}
         </span>
     }
