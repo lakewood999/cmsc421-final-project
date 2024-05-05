@@ -27,6 +27,11 @@ const PostSummary = () => {
         setLoading(false);
     }
 
+    const resetComponent = () => {
+        setActivated(false);
+        setSummary("");
+    }
+
     let cardBodyContent = null;
     if (!activated) {
         cardBodyContent = <div>
@@ -39,7 +44,10 @@ const PostSummary = () => {
         if (loading) {
             cardBodyContent = <p>Generating summary...</p>
         } else {
-            cardBodyContent = <p><b>Summary: </b>{summary}</p>
+            cardBodyContent = <div>
+                <p><b>Summary: </b>{summary}</p>
+                <button className="btn btn-primary" onClick={resetComponent}>Reset</button>
+            </div>
         }
     }
 
