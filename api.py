@@ -31,7 +31,12 @@ model = AutoModelForSequenceClassification.from_pretrained(model_path)
 tagger = Classifier.load('sentiment-fast')
 
 # Load the model for NLTK
-nltk.download('vader_lexicon', download_dir='/root/nltk_data')
+# only download if not already downloaded
+nltk.data.path.append("/root/nltk_data")
+try:
+    nltk.data.find('vader_lexicon')
+except LookupError:
+    nltk.download('vader_lexicon', download_dir='/root/nltk_data')
 sia = SentimentIntensityAnalyzer()
 
 # Securely store credentials in a .env file

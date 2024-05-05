@@ -41,10 +41,10 @@ export default function SearchForm() {
     const [targetPosts, setTargetPosts] = React.useState(2);
     const [commentsDepth, setCommentsDepth] = React.useState(3);
     const [maxComments, setMaxComments] = React.useState(-1);
-    const [requireSelfPosts, setRequireSelfPosts] = React.useState(false);
+    const [requireSelfPosts, setRequireSelfPosts] = React.useState(true);
     // Internal state
     const [isLoading, setIsLoading] = React.useState(false);
-    const [showAdvanced, setShowAdvanced] = React.useState(false);
+    const [showAdvanced, setShowAdvanced] = React.useState(true);
     const [_, setErrorString] = React.useState(""); // TODO: implement error handling
 
     const redditData = useDataStore((state) => state.redditData);

@@ -64,8 +64,6 @@ def api_summarize():
         return jsonify({"error": "Invalid request"})
     if "data" not in content:
         return jsonify({"error": "Missing data"})
-    if "method" not in content:
-        return jsonify({"error": "Missing method"})
 
     # convert the content into a dataframe
     df = pd.DataFrame(content['data'])

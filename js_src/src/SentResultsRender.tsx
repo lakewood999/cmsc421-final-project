@@ -62,12 +62,16 @@ const SentResultsRender = () => {
         let p = (pos_per * 100 == 100 ? 99 : pos_per * 100)
         let nt = (p + (neu_per * 100) > p ? (p + (neu_per * 100)) : p + .01)
         let n = 100
+        let gaugeValue = pos_per * 100 - .01 < 0 ? nt : pos_per * 100 - .01
         // if p or nt are NaN, set them to 0
         if (isNaN(p)) {
             p = 0
         }
         if (isNaN(nt)) {
             nt = p + .01
+        }
+        if (isNaN(gaugeValue)) {
+            gaugeValue = 0
         }
 
         //console.log("pos -> " + (p));
@@ -87,7 +91,7 @@ const SentResultsRender = () => {
                     ]
             }}
             pointer={{ type: "blob", animationDelay: 0 }}
-            value={pos_per * 100 - .01 < 0 ? nt : pos_per * 100 - .01}
+            value={gaugeValue}
         />]
     }
 
