@@ -15,3 +15,4 @@ services:
       - .env:/app/.env:ro
       - ./hf_cache:/.cache/huggingface:rw
       - ./flair_cache:/.cache/flair:rw
+      - ./nltk_cache:/root/nltk_data:rw
