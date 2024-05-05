@@ -42,4 +42,5 @@ COPY main.py api.py .
 COPY --from=webpack /static/js/ ./static/js/
 
 # Start
-CMD exec /root/.local/bin/gunicorn --bind 0.0.0.0:80 --reload main:app
+ARG GUNICORN_WORKERS
+CMD exec /root/.local/bin/gunicorn --bind 0.0.0.0:80 --reload --timeout=60 --workers=${GUNICORN_WORKERS} --worker-class=${GUNICORN_WORKER_CLASS} main:app

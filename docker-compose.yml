@@ -12,6 +12,8 @@ services:
       - HF_HOME=/.cache/huggingface
       - FLAIR_CACHE_ROOT=/.cache/flair
       - NLTK_DATA=/root/nltk_data
+      - GUNICORN_WORKERS=1
+      - GUNICORN_WORKER_CLASS=gthread
     volumes:
       - .env:/app/.env:ro
       - ./hf_cache:/.cache/huggingface:rw
