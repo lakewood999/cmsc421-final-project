@@ -132,9 +132,9 @@ export default function SearchForm() {
                 e.preventDefault();
                 apiCall();
             }}>
-                <label className="form-label">
+                <label className="form-label"><b>
                     What topic would you like to know Reddit's general sentiment of?
-                </label>
+                </b></label>
                 <div className="input-group mb-3">
                     <input
                         type="text"
@@ -156,10 +156,10 @@ export default function SearchForm() {
                 >
                     {showAdvanced ? "Hide" : "Show"} advanced options
                 </a>
-                <div className="collapse" id="advancedOptionsCollapsible">
+                <div className="collapse show" id="advancedOptionsCollapsible">
                     <div className="row">
-                        <div className="col-md-3">
-                            <label className="form-label">Subreddit</label>
+                        <div className="col-md-2">
+                            <label className="form-label"><b>Subreddit</b></label>
                             <input
                                 type="text"
                                 className="form-control"
@@ -170,7 +170,7 @@ export default function SearchForm() {
                             />
                         </div>
                         <div className="col-md-2">
-                            <label className="form-label">Target total posts</label>
+                            <label className="form-label"><b>Target total posts</b></label>
                             <input
                                 type="number"
                                 className="form-control"
@@ -180,8 +180,8 @@ export default function SearchForm() {
                                 }}
                             />
                         </div>
-                        <div className="col-md-2">
-                            <label className="form-label">Max comments depth</label>
+                        <div className="col-md-3">
+                            <label className="form-label"><b>Max comments depth</b></label>
                             <input
                                 type="number"
                                 className="form-control"
@@ -191,8 +191,8 @@ export default function SearchForm() {
                                 }}
                             />
                         </div>
-                        <div className="col-md-2">
-                            <label className="form-label">Max comments per post</label>
+                        <div className="col-md-3">
+                            <label className="form-label"><b>Max comments per post</b></label>
                             <input
                                 type="number"
                                 className="form-control"
@@ -202,8 +202,8 @@ export default function SearchForm() {
                                 }}
                             />
                         </div>
-                        <div className="col-md-3">
-                            <label className="form-label">Require self-posts</label><br />
+                        <div className="col-md-2">
+                            <label className="form-label"><b>Require self-posts</b></label><br />
                             <input
                                 type="checkbox"
                                 className="form-check-input"

@@ -11,8 +11,8 @@ const ResultsRender = () => {
     } else if (data.length > 0) {
         // filter out the posts
         const posts = data.filter((item) => item.type === "post")
-        body = posts.map((post) => {
-            return <DisplayPost postId={post.id} />;
+        body = posts.map((post, i) => {
+            return <DisplayPost postId={post.id} idx={i} />;
         })
     } else if (data.length === 0) {
         body = [<p>No results found for the given parameters. Try adjusting the advanced options or the search terms and try again.</p>];

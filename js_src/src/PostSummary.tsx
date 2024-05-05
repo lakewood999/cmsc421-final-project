@@ -42,7 +42,12 @@ const PostSummary = () => {
         </div>
     } else {
         if (loading) {
-            cardBodyContent = <p>Generating summary...</p>
+            cardBodyContent = <div style={{ textAlign: "center" }}>
+                <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div><br />
+                <p>Generating summary...</p>
+            </div>
         } else {
             cardBodyContent = <div>
                 <p><b>Summary: </b>{summary}</p>
