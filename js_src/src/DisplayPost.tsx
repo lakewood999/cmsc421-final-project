@@ -17,6 +17,19 @@ const DisplayPost = (props: { postId: string, idx: number }) => {
     const sentiment_display = (post.body === '') ?
         null : <SentimentDisplay objId={props.postId} />;
 
+    const commentsSection = (children === undefined || children.length === 0) ? null : <li className="list-group-item">
+        <button className="btn btn-primary mb-3" onClick={() => setShowComments(!showComments)} data-bs-toggle="collapse" data-bs-target={`#comments-of-${props.postId}`}>
+            {showComments ? "Hide" : "Show"} Comments
+        </button>
+        <div className={`collapse ${(showComments ? "show" : "")}`} id={`comments-of-${props.postId}`}>
+            {children.map((child) => {
+                return (
+                    <DisplayComment commentId={child.id} />
+                )
+            })}
+        </div>
+    </li>
+
     return (
         <div className="card mb-3">
             <div className="card-header">
@@ -29,18 +42,7 @@ const DisplayPost = (props: { postId: string, idx: number }) => {
                 <li className="list-group-item">
                     <Markdown>{post.body === '' ? "<No body text found>" : post.body}</Markdown>
                 </li>
-                <li className="list-group-item">
-                    <button className="btn btn-primary mb-3" onClick={() => setShowComments(!showComments)} data-bs-toggle="collapse" data-bs-target={`#comments-of-${props.postId}`}>
-                        {showComments ? "Hide" : "Show"} Comments
-                    </button>
-                    <div className={`collapse ${(showComments ? "show" : "")}`} id={`comments-of-${props.postId}`}>
-                        {children.map((child) => {
-                            return (
-                                <DisplayComment commentId={child.id} />
-                            )
-                        })}
-                    </div>
-                </li>
+                {commentsSection}
             </ul>
         </div>
     )
