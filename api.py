@@ -31,7 +31,7 @@ model = AutoModelForSequenceClassification.from_pretrained(model_path)
 tagger = Classifier.load('sentiment-fast')
 
 # Load the model for NLTK
-nltk.download('vader_lexicon')
+nltk.download('vader_lexicon', download_dir='/root/nltk_data')
 sia = SentimentIntensityAnalyzer()
 
 # Securely store credentials in a .env file
@@ -85,7 +85,8 @@ def expand_comments(submission, post_id, limit: int = 3, total_limit: int = -1) 
             heapq.heapify(comments_queue)
     return final_comments
 
-def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_depth: int = 3, max_comments: int = -1, prefer_recent: bool = True) -> list:
+def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_depth: int = 3, max_comments: int = -1,
+                 prefer_recent: bool = True, self_post_only: bool = False) -> list:
     """Uses the Reddit API to search for posts related to a given query.
 
     :param str query: The search term to use.
@@ -111,8 +112,8 @@ def topic_search(query: str, subreddit: str, target_posts: int = 10, comments_de
         if submission.selftext == '[removed]' or submission.selftext == '[deleted]':
             continue
         # Include only self-posts
-        #if not submission.is_self:
-        #    continue
+        if self_post_only and not submission.is_self:
+            continue
         # Drop nsfw
         if submission.over_18:
             continue
@@ -235,5 +236,7 @@ def summarize_content(df: pd.DataFrame, column: str = 'body'):
                 print("No response or unexpected response format.")
         except Exception as e:
             print("Error during API call:", str(e))
+            return f"Error during API call: {str(e)}"
     else:
         print("The specified column does not exist or is completely empty.")
+        return "Error: The specified column does not exist or is completely empty."

@@ -62,10 +62,17 @@ const SentResultsRender = () => {
         let p = (pos_per * 100 == 100 ? 99 : pos_per * 100)
         let nt = (p + (neu_per * 100) > p ? (p + (neu_per * 100)) : p + .01)
         let n = 100
+        // if p or nt are NaN, set them to 0
+        if (isNaN(p)) {
+            p = 0
+        }
+        if (isNaN(nt)) {
+            nt = p + .01
+        }
 
-        console.log("pos -> " + (p));
-        console.log("neut -> " + (nt));
-        console.log("neg -> " + (n));
+        //console.log("pos -> " + (p));
+        //console.log("neut -> " + (nt));
+        //console.log("neg -> " + (n));
 
         gauge = [<GaugeComponent
             type="semicircle"
@@ -82,16 +89,21 @@ const SentResultsRender = () => {
             pointer={{ type: "blob", animationDelay: 0 }}
             value={pos_per * 100 - .01 < 0 ? nt : pos_per * 100 - .01}
         />]
-
     }
 
-
     return (
-        <div>
-            <div style={{ width: '50%', margin: 'auto' }}>
-                {gauge}
+        <div className="card mb-4 rounded-3 shadow-sm">
+            <div className="card-header py-3">
+                <h4 className="my-0 fw-normal">Sentiment Analysis Summary</h4>
             </div>
-            {body}
+            <div className="card-body">
+                <div className="row justify-content-center">
+                    <div className="col-md-6 col-sm-12">
+                        {gauge}
+                    </div>
+                </div>
+                {body}
+            </div>
         </div>
     )
 }

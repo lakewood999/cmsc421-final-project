@@ -11,6 +11,7 @@ services:
     environment:
       - HF_HOME=/.cache/huggingface
       - FLAIR_CACHE_ROOT=/.cache/flair
+      - NLTK_DATA=/root/nltk_data
     volumes:
       - .env:/app/.env:ro
       - ./hf_cache:/.cache/huggingface:rw

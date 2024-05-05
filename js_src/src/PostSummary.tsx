@@ -20,31 +20,40 @@ const PostSummary = () => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ posts: [] })
+            body: JSON.stringify({ data: posts })
         });
         const data = await response.json();
         setSummary(data.summary);
         setLoading(false);
     }
 
+    let cardBodyContent = null;
     if (!activated) {
-        return <div>
-            <h1>Summary of Posts</h1>
-            <p>If you would like to generate a summary of the posts analyzed and a description of the overall sentiments expressed, click on the button below. Note that this feature is opt-in to reduce the costs associated with using the OpenAI API.</p>
-            <button className="btn btn-primary" onClick={generateSummary} disabled={redditData === null}>Generate Summary</button>
+        cardBodyContent = <div>
+            <button className="btn btn-primary" onClick={generateSummary} disabled={redditData === null || posts.length === 0}>Generate Summary</button>
+            {
+                (redditData !== null) ? <p className="mt-2">There are {posts.length} posts available for summarization. Only Reddit self-posts are eligible</p> : null
+            }
         </div>
     } else {
         if (loading) {
-            return <div>
-                <h1>Summary of Posts</h1>
-                <p>Generating summary...</p>
-            </div>
+            cardBodyContent = <p>Generating summary...</p>
+        } else {
+            cardBodyContent = <p><b>Summary: </b>{summary}</p>
         }
-        return <div>
-            <h1>Summary of Posts</h1>
-            <p>{summary}</p>
-        </div>
     }
+
+    return <div className="card mb-4 rounded-3 shadow-sm">
+        <div className="card-header py-3">
+            <h4 className="my-0 fw-normal">Summary of Posts</h4>
+        </div>
+        <div className="card-body">
+            <p>
+                This feature uses OpenAI's GPT-3.5 model to summarize all of the posts (not comments) that have been analyzed and provide a rough sentiment analysis overview. Due to the costs associated with the API, this feature is opt-in and can be run by clicking the button below.
+            </p>
+            {cardBodyContent}
+        </div>
+    </div>
 }
 
 export default PostSummary;
