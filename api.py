@@ -3,8 +3,8 @@ import heapq
 from typing import List
 import praw, praw.models, os, dotenv
 import pandas as pd
-#from nltk.sentiment import SentimentIntensityAnalyzer
-#import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
 import flair
 from flair.data import Sentence
 from flair.nn import Classifier
@@ -12,7 +12,6 @@ from scipy.special import softmax
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer, AutoConfig
 
-import os
 from openai import OpenAI
 
 # Load the environment variable
@@ -21,15 +20,19 @@ from dotenv import load_dotenv
 from pathlib import Path
 flair.cache_root = Path(os.getenv('FLAIR_CACHE_ROOT', '/.cache/flair'))
 
-# Load the sentiment analysis model
+# Load the sentiment analysis model - for hugging face
 model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 config = AutoConfig.from_pretrained(model_path)
 # PT
 model = AutoModelForSequenceClassification.from_pretrained(model_path)
 
-# Load the sentiment analysis model
-tagger = Classifier.load('sentiment')
+# Load the sentiment analysis model - for flair
+tagger = Classifier.load('sentiment-fast')
+
+# Load the model for NLTK
+nltk.download('vader_lexicon')
+sia = SentimentIntensityAnalyzer()
 
 # Securely store credentials in a .env file
 dotenv.load_dotenv()
@@ -164,6 +167,8 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
     # Drop any rows with empty bodies
     df = df[df[column] != ''].copy()
     if mode == "flair":
+        # trunace the sentences to 480 tokens to be safe
+        df[column] = df[column].apply(lambda x: x[:480])
         # Convert body to Flair sentences
         df['sentence'] = df[column].apply(lambda x: Sentence(x)) # type: ignore
         # Perform sentiment analysis
@@ -176,8 +181,8 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
         # Preprocess text
         df['sentence'] = df[column].apply(lambda x: hf_preprocess_text(x))
         # tokenize
-        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, truncation=True,
-                                                                max_length=500, return_tensors='pt'))
+        df['tokens'] = df['sentence'].apply(lambda x: tokenizer(x, padding=True, truncation=True,
+                                                                max_length=512, return_tensors='pt'))
         df['output'] = df['tokens'].apply(lambda x: model(**x))
         df['scores'] = df['output'].apply(lambda x: softmax(x[0][0].detach().numpy()))
         df['ranking'] = df['scores'].apply(lambda x: x.argsort()[::-1])
@@ -189,6 +194,11 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
         #df['sentiment_score'] = df.apply(lambda x: x['scores'][x['ranking'][0]], axis=1)
         # Drop the intermediate columns
         df.drop(columns=['sentence', 'tokens', 'output', 'scores', 'ranking'], inplace=True)
+    elif mode == "nltk":
+        df['sentiment_tmp'] = df[column].apply(lambda x: sia.polarity_scores(x))
+        df['sentiment_score'] = df['sentiment_tmp'].apply(lambda x: x['compound'])
+        df['sentiment_result'] = df['sentiment_score'].apply(lambda x: 'positive' if x >= 0.05 else ('negative' if x <= -0.05 else 'neutral'))
+        df.drop(columns=['sentiment_tmp'], inplace=True)
     return df
 
 # Function to request chatGPT for a summary of what is being said in the comments 
@@ -204,7 +214,7 @@ def summarize_content(df: pd.DataFrame, column: str = 'body'):
     client = OpenAI(api_key=api_key)
 
     # Ensure that the DataFrame column exists and is not empty
-    if column in df and not df[column].isnull().all():
+    if column in df.columns and not df[column].isnull().all():
         # Join all text items into a single string with new lines separating them
         text_content = "\n".join(df[column].dropna().tolist())
 
@@ -223,7 +233,6 @@ def summarize_content(df: pd.DataFrame, column: str = 'body'):
                 return summary
             else:
                 print("No response or unexpected response format.")
-                
         except Exception as e:
             print("Error during API call:", str(e))
     else:

@@ -58,16 +58,14 @@ const SentResultsRender = () => {
         <p> Overall, the sentiment was {sum_str} in the posts we analyzed. </p>]
 
 
-
-
         //recalculate percentages so it doesn't break the gauage while loading
         let p = (pos_per * 100 == 100 ? 99 : pos_per * 100)
         let nt = (p + (neu_per * 100) > p ? (p + (neu_per * 100)) : p + .01)
         let n = 100
 
-        // console.log("pos -> " + (p));
-        // console.log("neut -> " + (nt));
-        // console.log("neg -> " + (n));
+        console.log("pos -> " + (p));
+        console.log("neut -> " + (nt));
+        console.log("neg -> " + (n));
 
         gauge = [<GaugeComponent
             type="semicircle"

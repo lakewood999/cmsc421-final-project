@@ -1,4 +1,3 @@
-from crypt import methods
 from flask import Flask, jsonify, render_template, request
 from api import sentiment_analysis, topic_search,  results_to_dataframe, summarize_content
 import pandas as pd

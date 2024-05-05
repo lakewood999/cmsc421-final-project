@@ -79,6 +79,7 @@ export default function SearchForm() {
                 const postsData = posts.map((post) => nestedData.parentData[post]);
                 getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "flair"), "flair");
                 getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "hf"), "hf");
+                getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "nltk"), "nltk");
 
                 // grab the sentiment for comments, preferring top level comments
                 // TODO: need to actually include depth to sort by it
@@ -93,6 +94,7 @@ export default function SearchForm() {
                 for (const group of commentGroups) {
                     getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "flair"), "flair");
                     getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "hf"), "hf");
+                    getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "nltk"), "nltk");
                 }
             })
             .catch((error) => {

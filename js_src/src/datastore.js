@@ -22,7 +22,7 @@ const useDataStore = create((set, get) => ({
     // allow showing multiple models
     sentimentMode: "flair",
     setSentimentMode: (mode) => set({ sentimentMode: mode }),
-    numModes: 2, // number of sentiment modes, used for progress, etc.
+    numModes: 3, // number of sentiment modes, used for progress, etc.
 }));
 
 export default useDataStore;
