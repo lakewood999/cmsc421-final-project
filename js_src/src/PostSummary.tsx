@@ -10,7 +10,6 @@ const PostSummary = () => {
 
     // grab only the posts
     const posts = (redditData === null) ? [] : redditData.filter((entry: ResultRow) => entry.type === "post" && entry.body !== "");
-    console.log(posts);
 
     const generateSummary = async () => {
         setActivated(true);
