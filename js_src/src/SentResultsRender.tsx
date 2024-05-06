@@ -50,11 +50,11 @@ const SentResultsRender = () => {
         }
 
 
-        body = [<p> The number of posts we were able to analyze was {analyzed.toString()}. </p>,
-        <p> The number of posts with <span style={{ color: "green" }}>postive</span> sentiment was {pos.toString()} ({Math.round((Math.abs(pos_per) + Number.EPSILON) * 100)}%). </p>,
-        <p> The number of posts with <span style={{ color: "#CCCC00" }}>neutral</span> sentiment was {neu.toString()} ({Math.round((Math.abs(neu_per) + Number.EPSILON) * 100)}%). </p>,
-        <p> The number of posts with <span style={{ color: "red" }}>negative</span> sentiment was {neg.toString()} ({Math.round((Math.abs(neg_per) + Number.EPSILON) * 100)}%). </p>,
-        <p> The number of posts we had an <span style={{ color: "gray" }}>error</span> anlayzing was {err.toString()}. </p>,
+        body = [<p> The number of posts/comments we were able to analyze was {analyzed.toString()}. </p>,
+        <p> The number of posts/comments with <span style={{ color: "green" }}>postive</span> sentiment was {pos.toString()} ({Math.round((Math.abs(pos_per) + Number.EPSILON) * 100)}%). </p>,
+        <p> The number of posts/comments with <span style={{ color: "#CCCC00" }}>neutral</span> sentiment was {neu.toString()} ({Math.round((Math.abs(neu_per) + Number.EPSILON) * 100)}%). </p>,
+        <p> The number of posts/comments with <span style={{ color: "red" }}>negative</span> sentiment was {neg.toString()} ({Math.round((Math.abs(neg_per) + Number.EPSILON) * 100)}%). </p>,
+        <p> The number of posts/comments we had an <span style={{ color: "gray" }}>error</span> anlayzing was {err.toString()}. </p>,
         <p> Overall, the sentiment was {sum_str} in the posts we analyzed. </p>]
 
 

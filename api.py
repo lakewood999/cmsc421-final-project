@@ -171,6 +171,7 @@ def sentiment_analysis(df: pd.DataFrame, column: str = 'body', mode: str = "flai
     :return: The original DataFrame with an additional column containing the sentiment analysis results.
     """
     # Drop any rows with empty bodies
+    df[column] = df[column].apply(lambda x: x.strip() if isinstance(x, str) else x)
     df = df[df[column] != ''].copy()
     if mode == "flair":
         # trunace the sentences to 480 tokens to be safe
