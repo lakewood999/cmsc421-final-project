@@ -5,15 +5,30 @@ import DisplayComment from "./DisplayComment";
 import Markdown from 'react-markdown'
 import SentimentDisplay from "./SentimentDisplay";
 
-const DisplayPost = (props: { postId: string }) => {
+const DisplayPost = (props: { postId: string, idx: number }) => {
     const data = useDataStore((state) => state.redditData);
     const { nested, parentData } = dataToNested(data);
+
+    const [showComments, setShowComments] = React.useState((props.idx === 0) ? true : false);
 
     const post = parentData[props.postId]
     const children = nested[props.postId]
 
     const sentiment_display = (post.body === '') ?
         null : <SentimentDisplay objId={props.postId} />;
+
+    const commentsSection = (children === undefined || children.length === 0) ? null : <li className="list-group-item">
+        <button className="btn btn-primary mb-3" onClick={() => setShowComments(!showComments)} data-bs-toggle="collapse" data-bs-target={`#comments-of-${props.postId}`}>
+            {showComments ? "Hide" : "Show"} Comments
+        </button>
+        <div className={`collapse ${(showComments ? "show" : "")}`} id={`comments-of-${props.postId}`}>
+            {children.map((child) => {
+                return (
+                    <DisplayComment commentId={child.id} />
+                )
+            })}
+        </div>
+    </li>
 
     return (
         <div className="card mb-3">
@@ -27,13 +42,7 @@ const DisplayPost = (props: { postId: string }) => {
                 <li className="list-group-item">
                     <Markdown>{post.body === '' ? "<No body text found>" : post.body}</Markdown>
                 </li>
-                <li className="list-group-item">
-                    {children.map((child) => {
-                        return (
-                            <DisplayComment commentId={child.id} />
-                        )
-                    })}
-                </li>
+                {commentsSection}
             </ul>
         </div>
     )

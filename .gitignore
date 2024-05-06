@@ -6,3 +6,4 @@ settings.json
 __pycache__
 hf_cache
 flair_cache
+nltk_cache

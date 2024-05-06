@@ -1,8 +1,23 @@
+# CMSC421 Final Project
+
+This project is a web application that allows users to understand the sentiments of the Internet on a given topic,
+proxied by content from Reddit. The application uses a few publicly available sentiment analysis packages using
+different technologies and models (Flair, HuggingFace transformers, and NLTK VADER) to analyze the sentiment of posts
+and comments on Reddit based on a user query. The sentiment results are show per text body and also in summary. Also
+provided is a textual and sentiment summary provided by OpenAI's GPT-3.5 API.
+
+## Live Demo
+
+A live demo of our application is available at [cmsc421.stevensu.dev](https://cmsc421.stevensu.dev). Please be kind with
+usage as the app is compute-intensive and features based on OpenAI's API have real costs associated with them.
+
 ## Setup
+
+Note: This project was developed on a Unix-based x86-64 system. Windows users may need to adjust some commands accordingly. Users on ARM-based devices may also need to adjust some Python packages (namely using the general `torch` instead of the CPU-specific variant). Docker is the recommended deploy method to prevent most of these issues. 
 
 1. `cd` to `js_src` and run `npm install`. You'll need node installed at the very least
 2. `npm run build` to build the project or `npm run watch` to continuously build as you develop
-3. `gunicorn --bind :5000 main.app` to run the server. If you don't have gunicorn installed, you can run `python3
+3. `gunicorn --bind :5000 main.app` to run the server. If you don't have `gunicorn` installed, you can run `python3
    main.py` for a development server
 
 ## Docker

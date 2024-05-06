@@ -1,6 +1,7 @@
 import React from "react";
 import useDataStore from "./datastore";
 import { ResultRow, dataToNested } from "./helpers";
+import SentProgress from "./SentProgress";
 
 async function getSentiment(data: ResultRow[], callback: (results: object[]) => void, method: string = "flair") {
     const response = await fetch("/api/sentiment", {
@@ -40,11 +41,13 @@ export default function SearchForm() {
     const [targetPosts, setTargetPosts] = React.useState(2);
     const [commentsDepth, setCommentsDepth] = React.useState(3);
     const [maxComments, setMaxComments] = React.useState(-1);
+    const [requireSelfPosts, setRequireSelfPosts] = React.useState(true);
     // Internal state
     const [isLoading, setIsLoading] = React.useState(false);
-    const [showAdvanced, setShowAdvanced] = React.useState(false);
+    const [showAdvanced, setShowAdvanced] = React.useState(true);
     const [_, setErrorString] = React.useState(""); // TODO: implement error handling
 
+    const redditData = useDataStore((state) => state.redditData);
     const setRedditData = useDataStore((state) => state.setRedditData);
     const setSentimentData = useDataStore((state) => state.setSentimentData);
     const dangerouslySetSentimentData = useDataStore((state) => state.dangerouslySetSentimentData);
@@ -65,6 +68,7 @@ export default function SearchForm() {
                 target_posts: targetPosts,
                 comments_depth: commentsDepth,
                 max_comments: maxComments,
+                require_self_posts: requireSelfPosts,
             }),
         })
             .then((response) => response.json())
@@ -79,6 +83,7 @@ export default function SearchForm() {
                 const postsData = posts.map((post) => nestedData.parentData[post]);
                 getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "flair"), "flair");
                 getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "hf"), "hf");
+                getSentiment(postsData, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "nltk"), "nltk");
 
                 // grab the sentiment for comments, preferring top level comments
                 // TODO: need to actually include depth to sort by it
@@ -93,6 +98,7 @@ export default function SearchForm() {
                 for (const group of commentGroups) {
                     getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "flair"), "flair");
                     getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "hf"), "hf");
+                    getSentiment(group, (results: SentimentResult[]) => sentimentCallback(results, setSentimentData, "nltk"), "nltk");
                 }
             })
             .catch((error) => {
@@ -102,93 +108,124 @@ export default function SearchForm() {
             });
     };
 
-    if (isLoading) {
-        return (
-            <div style={{ textAlign: "center" }}>
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        );
+
+    let sentimentProgress = null;
+    if (redditData !== null) {
+        sentimentProgress = <div>
+            <hr />
+            <p>Sentiment analysis progress:</p>
+            <SentProgress />
+        </div>;
     }
 
-    return (
-        <form onSubmit={(e) => {
-            e.preventDefault();
-            apiCall();
-        }}>
-            <label className="form-label">
-                What topic would you like to know Reddit's general sentiment of?
-            </label>
-            <div className="input-group mb-3">
-                <input
-                    type="text"
-                    className="form-control"
-                    value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                    }}
-                />
-                <button className="btn btn-primary" type="submit">
-                    Search
-                </button>
-            </div>
-            <a
-                role="button"
-                href="#advancedOptionsCollapsible"
-                data-bs-toggle="collapse"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-            >
-                {showAdvanced ? "Hide" : "Show"} advanced options
-            </a>
-            <div className="collapse" id="advancedOptionsCollapsible">
-                <div className="row">
-                    <div className="col-md-3">
-                        <label className="form-label">Subreddit</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={subreddit}
-                            onChange={(e) => {
-                                setSubreddit(e.target.value);
-                            }}
-                        />
-                    </div>
-                    <div className="col-md-2">
-                        <label className="form-label">Target total posts</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            value={targetPosts}
-                            onChange={(e) => {
-                                setTargetPosts(parseInt(e.target.value));
-                            }}
-                        />
-                    </div>
-                    <div className="col-md-2">
-                        <label className="form-label">Max comments depth</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            value={commentsDepth}
-                            onChange={(e) => {
-                                setCommentsDepth(parseInt(e.target.value));
-                            }}
-                        />
-                    </div>
-                    <div className="col-md-4">
-                        <label className="form-label">Max comments per post</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            value={maxComments}
-                            onChange={(e) => {
-                                setMaxComments(parseInt(e.target.value));
-                            }}
-                        />
+    let cardBody = null;
+    if (isLoading) {
+        cardBody = <div style={{ textAlign: "center" }}>
+            <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div><br />
+            Loading Reddit results...
+        </div>;
+    } else {
+        cardBody = <div>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                apiCall();
+            }}>
+                <label className="form-label"><b>
+                    What topic would you like to know Reddit's general sentiment of?
+                </b></label>
+                <div className="input-group mb-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                        }}
+                    />
+                    <button className="btn btn-primary" type="submit">
+                        Search
+                    </button>
+                </div>
+                <a
+                    role="button"
+                    href="#advancedOptionsCollapsible"
+                    data-bs-toggle="collapse"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                >
+                    {showAdvanced ? "Hide" : "Show"} advanced options
+                </a>
+                <div className="collapse show" id="advancedOptionsCollapsible">
+                    <div className="row">
+                        <div className="col-md-2">
+                            <label className="form-label"><b>Subreddit</b></label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={subreddit}
+                                onChange={(e) => {
+                                    setSubreddit(e.target.value);
+                                }}
+                            />
+                        </div>
+                        <div className="col-md-2">
+                            <label className="form-label"><b>Target total posts</b></label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={targetPosts}
+                                onChange={(e) => {
+                                    setTargetPosts(parseInt(e.target.value));
+                                }}
+                            />
+                        </div>
+                        <div className="col-md-3">
+                            <label className="form-label"><b>Max comments depth</b></label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={commentsDepth}
+                                onChange={(e) => {
+                                    setCommentsDepth(parseInt(e.target.value));
+                                }}
+                            />
+                        </div>
+                        <div className="col-md-3">
+                            <label className="form-label"><b>Max comments per post</b></label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={maxComments}
+                                onChange={(e) => {
+                                    setMaxComments(parseInt(e.target.value));
+                                }}
+                            />
+                        </div>
+                        <div className="col-md-2">
+                            <label className="form-label"><b>Require self-posts</b></label><br />
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={requireSelfPosts}
+                                onChange={(e) => {
+                                    setRequireSelfPosts(e.target.checked);
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
-        </form>
-    );
+            </form>
+            {sentimentProgress}
+        </div>;
+    }
+    return <div className="card mb-4 rounded-3 shadow-sm mb-3">
+        <div className="card-header py-3">
+            <h4 className="my-0 fw-normal">Search Reddit</h4>
+        </div>
+        <div className="card-body">
+            <p>Submit a query on Reddit to analyze the sentiment of. Additional options, such as the desired subreddit, number of posts and comments, and more can be modified via the Advanced Options area.</p>
+            {cardBody}
+        </div>
+    </div>;
 }

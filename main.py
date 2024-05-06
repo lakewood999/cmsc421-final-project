@@ -1,4 +1,3 @@
-from crypt import methods
 from flask import Flask, jsonify, render_template, request
 from api import sentiment_analysis, topic_search,  results_to_dataframe, summarize_content
 import pandas as pd
@@ -27,8 +26,9 @@ def api_search():
     target_posts = req.get("target_posts", 10)
     comments_depth = req.get("comments_depth", 3)
     max_comments = req.get("max_comments", -1)
+    require_self_posts = req.get("require_self_posts", False)
 
-    search_results = topic_search(search_term, subreddit, target_posts, comments_depth, max_comments)
+    search_results = topic_search(search_term, subreddit, target_posts, comments_depth, max_comments, self_post_only = require_self_posts)
     df = results_to_dataframe(search_results)
 
     return jsonify({"results": df.to_dict(orient="records")})
@@ -64,8 +64,6 @@ def api_summarize():
         return jsonify({"error": "Invalid request"})
     if "data" not in content:
         return jsonify({"error": "Missing data"})
-    if "method" not in content:
-        return jsonify({"error": "Missing method"})
 
     # convert the content into a dataframe
     df = pd.DataFrame(content['data'])
