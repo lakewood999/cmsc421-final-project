@@ -37,7 +37,7 @@ const PostSummary = () => {
         cardBodyContent = <div>
             <button className="btn btn-primary" onClick={generateSummary} disabled={redditData === null || posts.length === 0}>Generate Summary</button>
             {
-                (redditData !== null) ? <p className="mt-2">There are {posts.length} posts available for summarization. Only Reddit self-posts are eligible</p> : null
+                (redditData !== null) ? <p className="mt-2">There are {posts.length} post(s) available for summarization. Only Reddit self-posts are eligible</p> : null
             }
         </div>
     } else {
