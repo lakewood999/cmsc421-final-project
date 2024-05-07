@@ -2,6 +2,8 @@ import React from "react";
 import useDataStore from "./datastore";
 import { ResultRow, dataToNested } from "./helpers";
 import SentProgress from "./SentProgress";
+import { Tooltip } from "react-tooltip";
+import { QuestionCircle } from 'react-bootstrap-icons';
 
 async function getSentiment(data: ResultRow[], callback: (results: object[]) => void, method: string = "flair") {
     const response = await fetch("/api/sentiment", {
@@ -110,7 +112,7 @@ export default function SearchForm() {
             })
             .catch((error) => {
                 setIsLoading(false);
-                setErrorString("An error occurred. Please try again later.");
+                setErrorString("An error occurred. Please try again later. Check for spelling errors in the subreddit name or search query.");
                 console.error("Error:", error);
             });
     };
@@ -174,7 +176,7 @@ export default function SearchForm() {
                 <div className="collapse show" id="advancedOptionsCollapsible">
                     <div className="row">
                         <div className="col-md-2">
-                            <label className="form-label"><b>Subreddit</b></label>
+                            <label className="form-label"><b>Subreddit</b><QuestionCircle data-tooltip-id="subreddit-help" data-tooltip-content="Name of the subreddit. Do not include r/" className="ms-2" color="black" /><Tooltip id="subreddit-help" /></label>
                             <div className="input-group">
                                 <span className="input-group-text">r/</span>
                                 <input
@@ -188,7 +190,7 @@ export default function SearchForm() {
                             </div>
                         </div>
                         <div className="col-md-2">
-                            <label className="form-label"><b>Target total posts</b></label>
+                            <label className="form-label"><b>Target total posts</b><QuestionCircle data-tooltip-id="target-total-posts-help" data-tooltip-content="Total number of posts to attempt to retrieve on best effort; not guaranteed post-filtering" className="ms-2" color="black" /><Tooltip id="target-total-posts-help" /></label>
                             <input
                                 type="number"
                                 className="form-control"
@@ -199,7 +201,7 @@ export default function SearchForm() {
                             />
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label"><b>Max comments depth</b></label>
+                            <label className="form-label"><b>Max comments depth</b><QuestionCircle data-tooltip-id="max-comments-depth-help" data-tooltip-content="Max nesting of comments to retrieve, keep low for performance" className="ms-2" color="black" /><Tooltip id="max-comments-depth-help" /></label>
                             <input
                                 type="number"
                                 className="form-control"
@@ -210,7 +212,7 @@ export default function SearchForm() {
                             />
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label"><b>Max comments per post</b></label>
+                            <label className="form-label"><b>Max comments per post</b><QuestionCircle data-tooltip-id="max-comments-post-help" data-tooltip-content="Max comments per post, prioritizing top level nesting. -1 for no limit besides depth" className="ms-2" color="black" /><Tooltip id="max-comments-post-help" /></label>
                             <input
                                 type="number"
                                 className="form-control"
@@ -221,7 +223,7 @@ export default function SearchForm() {
                             />
                         </div>
                         <div className="col-md-2">
-                            <label className="form-label"><b>Require self-posts</b></label><br />
+                            <label className="form-label"><b>Require self-posts</b><QuestionCircle data-tooltip-id="self-posts-help" data-tooltip-content="Filter only self-posts (user text instead of link posts)" className="ms-2" color="black" /><Tooltip id="self-posts-help" /></label><br />
                             <input
                                 type="checkbox"
                                 className="form-check-input"

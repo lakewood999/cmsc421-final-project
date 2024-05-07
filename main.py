@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, abort
 from api import sentiment_analysis, topic_search,  results_to_dataframe, summarize_content
 import pandas as pd
 
@@ -28,10 +28,13 @@ def api_search():
     max_comments = req.get("max_comments", -1)
     require_self_posts = req.get("require_self_posts", False)
 
-    search_results = topic_search(search_term, subreddit, target_posts, comments_depth, max_comments, self_post_only = require_self_posts)
-    df = results_to_dataframe(search_results)
+    try:
+        search_results = topic_search(search_term, subreddit, target_posts, comments_depth, max_comments, self_post_only = require_self_posts)
+        df = results_to_dataframe(search_results)
 
-    return jsonify({"results": df.to_dict(orient="records")})
+        return jsonify({"results": df.to_dict(orient="records")})
+    except Exception as e:
+        abort(500, str(e))
 
 # I'm not sure how we want to structure the data input for sentiment analysis, so this will be a TODO
 @app.route("/api/sentiment", methods=["POST"])
@@ -50,12 +53,15 @@ def api_sentiment():
     if content['data'] == []:
         return jsonify({"results": []})
 
-    # convert the content into a dataframe
-    df = pd.DataFrame(content['data'])
-    # run the sentiment analysis
-    sentiment_df = sentiment_analysis(df, mode=content['method'])
-    
-    return jsonify({"results": sentiment_df.to_dict(orient="records")})
+    try:
+        # convert the content into a dataframe
+        df = pd.DataFrame(content['data'])
+        # run the sentiment analysis
+        sentiment_df = sentiment_analysis(df, mode=content['method'])
+        
+        return jsonify({"results": sentiment_df.to_dict(orient="records")})
+    except Exception as e:
+        abort(500, str(e))
 
 # Get a summary 
 @app.route("/api/summarize", methods=["POST"])
@@ -69,11 +75,14 @@ def api_summarize():
     if content['data'] == []:
         return jsonify({"summary": ""})
 
-    # convert the content into a dataframe
-    df = pd.DataFrame(content['data'])
-    # run the sentiment analysis
-    summary = summarize_content(df)    
-    return jsonify({"summary": summary})
+    try:
+        # convert the content into a dataframe
+        df = pd.DataFrame(content['data'])
+        # run the sentiment analysis
+        summary = summarize_content(df)    
+        return jsonify({"summary": summary})
+    except Exception as e:
+        abort(500, str(e))
 
 if __name__ == '__main__':
     app.run(debug=True, port=8084)
