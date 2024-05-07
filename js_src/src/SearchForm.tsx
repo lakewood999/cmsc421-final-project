@@ -45,7 +45,7 @@ export default function SearchForm() {
     // Internal state
     const [isLoading, setIsLoading] = React.useState(false);
     const [showAdvanced, setShowAdvanced] = React.useState(true);
-    const [_, setErrorString] = React.useState(""); // TODO: implement error handling
+    const [errorString, setErrorString] = React.useState(""); // TODO: implement error handling
 
     const redditData = useDataStore((state) => state.redditData);
     const setRedditData = useDataStore((state) => state.setRedditData);
@@ -57,6 +57,7 @@ export default function SearchForm() {
         // clear out old data
         setRedditData(null);
         dangerouslySetSentimentData({});
+        setErrorString("");
         fetch("/api/search", {
             method: "POST",
             headers: {
@@ -73,6 +74,12 @@ export default function SearchForm() {
         })
             .then((response) => response.json())
             .then((data) => {
+                // check if empty
+                if (data.results.length === 0) {
+                    setIsLoading(false);
+                    setErrorString("No results found for the given parameters. Try adjusting the advanced options or the search terms and try again. Also, ensure that there are no typos in the subreddit name or search query.");
+                    return;
+                }
                 // add empty placeholder for sentiment
                 const nestedData = dataToNested(data.results);
                 setRedditData(data.results);
@@ -118,6 +125,13 @@ export default function SearchForm() {
         </div>;
     }
 
+    let errorDisplay = null;
+    if (errorString !== "") {
+        errorDisplay = <div className="alert alert-danger" role="alert">
+            {errorString}
+        </div>;
+    }
+
     let cardBody = null;
     if (isLoading) {
         cardBody = <div style={{ textAlign: "center" }}>
@@ -148,6 +162,7 @@ export default function SearchForm() {
                         Search
                     </button>
                 </div>
+                {errorDisplay}
                 <a
                     role="button"
                     href="#advancedOptionsCollapsible"
@@ -160,14 +175,17 @@ export default function SearchForm() {
                     <div className="row">
                         <div className="col-md-2">
                             <label className="form-label"><b>Subreddit</b></label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={subreddit}
-                                onChange={(e) => {
-                                    setSubreddit(e.target.value);
-                                }}
-                            />
+                            <div className="input-group">
+                                <span className="input-group-text">r/</span>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={subreddit}
+                                    onChange={(e) => {
+                                        setSubreddit(e.target.value);
+                                    }}
+                                />
+                            </div>
                         </div>
                         <div className="col-md-2">
                             <label className="form-label"><b>Target total posts</b></label>

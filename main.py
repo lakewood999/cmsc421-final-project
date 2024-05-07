@@ -47,6 +47,8 @@ def api_sentiment():
         return jsonify({"error": "Missing data"})
     if "method" not in content:
         return jsonify({"error": "Missing method"})
+    if content['data'] == []:
+        return jsonify({"results": []})
 
     # convert the content into a dataframe
     df = pd.DataFrame(content['data'])
@@ -64,6 +66,8 @@ def api_summarize():
         return jsonify({"error": "Invalid request"})
     if "data" not in content:
         return jsonify({"error": "Missing data"})
+    if content['data'] == []:
+        return jsonify({"summary": ""})
 
     # convert the content into a dataframe
     df = pd.DataFrame(content['data'])
