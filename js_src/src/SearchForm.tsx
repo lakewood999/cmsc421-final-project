@@ -159,6 +159,7 @@ export default function SearchForm() {
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
                         }}
+                        required
                     />
                     <button className="btn btn-primary" type="submit">
                         Search
@@ -186,6 +187,7 @@ export default function SearchForm() {
                                     onChange={(e) => {
                                         setSubreddit(e.target.value);
                                     }}
+                                    required
                                 />
                             </div>
                         </div>
@@ -198,6 +200,9 @@ export default function SearchForm() {
                                 onChange={(e) => {
                                     setTargetPosts(parseInt(e.target.value));
                                 }}
+                                required
+                                min={1}
+                                step={1}
                             />
                         </div>
                         <div className="col-md-3">
@@ -209,6 +214,9 @@ export default function SearchForm() {
                                 onChange={(e) => {
                                     setCommentsDepth(parseInt(e.target.value));
                                 }}
+                                required
+                                min={1}
+                                step={1}
                             />
                         </div>
                         <div className="col-md-3">
@@ -220,6 +228,9 @@ export default function SearchForm() {
                                 onChange={(e) => {
                                     setMaxComments(parseInt(e.target.value));
                                 }}
+                                required
+                                min={-1}
+                                step={1}
                             />
                         </div>
                         <div className="col-md-2">
