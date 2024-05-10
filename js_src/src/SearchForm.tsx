@@ -47,7 +47,7 @@ export default function SearchForm() {
     // Internal state
     const [isLoading, setIsLoading] = React.useState(false);
     const [showAdvanced, setShowAdvanced] = React.useState(true);
-    const [errorString, setErrorString] = React.useState(""); // TODO: implement error handling
+    const [errorString, setErrorString] = React.useState("");
 
     const redditData = useDataStore((state) => state.redditData);
     const setRedditData = useDataStore((state) => state.setRedditData);
@@ -79,7 +79,7 @@ export default function SearchForm() {
                 // check if empty
                 if (data.results.length === 0) {
                     setIsLoading(false);
-                    setErrorString("No results found for the given parameters. Try adjusting the advanced options or the search terms and try again. Also, ensure that there are no typos in the subreddit name or search query.");
+                    setErrorString("No results found for the given parameters. Try adjusting the advanced options or the search terms and try again. Also, ensure that there are no typos in the subreddit name or search query. Try unchecking the 'Require self-posts' option for more results.");
                     return;
                 }
                 // add empty placeholder for sentiment
@@ -129,7 +129,8 @@ export default function SearchForm() {
 
     let errorDisplay = null;
     if (errorString !== "") {
-        errorDisplay = <div className="alert alert-danger" role="alert">
+        const errorColor = (errorString.includes("No results found") ? "warning" : "danger");
+        errorDisplay = <div className={`alert alert-${errorColor}`} role="alert">
             {errorString}
         </div>;
     }
@@ -256,6 +257,7 @@ export default function SearchForm() {
         </div>
         <div className="card-body">
             <p>Submit a query on Reddit to analyze the sentiment of. Additional options, such as the desired subreddit, number of posts and comments, and more can be modified via the Advanced Options area.</p>
+            <p><b>If you would like to make another search but sentiment analysis is still running in the background, please refresh the page to ensure a clean state.</b> Otherwise, the app supports making new requests assuming all processing for the previous search has completed.</p>
             {cardBody}
         </div>
     </div>;
