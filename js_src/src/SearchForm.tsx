@@ -258,7 +258,32 @@ export default function SearchForm() {
         <div className="card-body">
             <p>Submit a query on Reddit to analyze the sentiment of. Additional options, such as the desired subreddit, number of posts and comments, and more can be modified via the Advanced Options area.</p>
             <p><b>If you would like to make another search but sentiment analysis is still running in the background, please refresh the page to ensure a clean state.</b> Otherwise, the app supports making new requests assuming all processing for the previous search has completed.</p>
+            <p><button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#suggestedSearchModal">Search Suggestions</button></p>
             {cardBody}
+        </div>
+        <div className="modal fade" id="suggestedSearchModal" tabIndex={-1}>
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h5 className="modal-title">Suggested Searches</h5>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div className="modal-body">
+                        <p>Here are some suggested subreddit + query combinations. Feel free to give these a try or create your own!</p>
+                        <ul>
+                            <li>Subreddit: MovieSuggestions, Topic: 80s movies </li>
+                            <li>Subreddit: war, Topic: Israel</li>
+                            <li>Subreddit: soccer, Topic: [Soccer Player] (Try Messi)</li>
+                            <li>Subreddit: ApplyingToCollege, Topic: [College] (Try “University of Maryland”)</li>
+                            <li>Subreddit: NBA, Topic: Wembanyama rookie of the year </li>
+                            <li>Subreddit: guncontrol, Topic: crime</li>
+                        </ul>
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>;
 }
